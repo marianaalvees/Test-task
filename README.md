@@ -15,6 +15,12 @@ shutil
 https://docs.python.org/3/library/shutil.html
 
 
+
+
+-- ainda tenho de ver dos paths que ando a dar + e aditionar o file, mas pode não funcionar
+
+
+
 import os
 import shutil
 import urllib.request

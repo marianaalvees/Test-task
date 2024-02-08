@@ -111,17 +111,7 @@ source_path = "C:\\Users\\maria\\Documents\\Others\\Test-task\\source"
 replica_path = "C:\\Users\\maria\\Documents\\Others\\Test-task\\replica"
 
 print("-----------------------------------")
-def compare_files(file1, file2):
-    digests = []
-    for folder in [source_path, replica_path]:
-        hasher = hashlib.md5()
-        with open(folder, 'rb') as f:
-            buf = f.read()
-            hasher.update(buf)
-            a = hasher.hexdigest()
-            digests.append(a)
-            print(a)
-    return digests[0] == digests[1]
+
 
 
 print(compare_files(source_path+"ho", replica_path+"ho"))
@@ -221,6 +211,18 @@ for source_folder_path, source_subfolders, source_filenames in zip(os.walk(sourc
 
 
 
+def compare_files(source_file, replica_file):
+    digests = []
+    for file in [source_file, replica_file]:
+        hasher = hashlib.md5()
+        with open(file, 'rb') as f:
+            content = f.read()
+            hasher.update(content)
+            h = hasher.hexdigest()
+            digests.append(h)
+            print(h)
+    return digests[0] == digests[1]
+
 def copy_dir(folder_path, destination):
     try:
         # get the name of the subdirectory through its path
@@ -229,6 +231,7 @@ def copy_dir(folder_path, destination):
         print(f'Folder "{foldername}" and its content copied to {destination}') # Folder and its content removed
     except:
         print(f'Folder "{foldername}" not copied')
+
 
 def delete_dir(folder_path):
     try:
@@ -240,30 +243,105 @@ def delete_dir(folder_path):
         print(f'Folder "{foldername}" not deleted')
 
 
-def compare_directories(source_path, replica_path):
-    ''' This method compares directories. If there is a common directory, the
-        algorithm must compare what is inside of the directory by calling this
-        recursively.
-    '''
+def delete_file(file_path):
+    try:
+        filename = file_path[file_path.rindex("\\")+1:]
+        os.remove(file_path)
+        print(f'File "{filename}" removed')
+    except:
+        print(f'File "{filename}" not deleted')
+
+
+def update_name(old_path, new_path):
+    """
+    Changes the name of a directory or file by changing its path. 
+    """
+    try:
+        os.rename(old_path, new_path)
+
+        old_name = old_path[old_path.rindex("\\")+1:]
+        new_name = new_path[new_path.rindex("\\")+1:]
+
+        print(f"{old_name} remaned to {new_name} successfully.")
+    except:
+         print(f"{old_name} not remaned to {new_name}.")
+
+
+def match_directories(source_directory, replica_directory):
+     """
+     If the two directories have any common subdirectories or files, the
+     one from the replica is renamed to have the same name as the one in 
+     the source.     
+
+     - maybe if they have any matching directories or files.
+     This function compares directories with different names to check whether
+     they correspond to a renamed version of the other. 
+     Returns a list with the two matching directories if it is the case.
+     Otherwise it returns an empty list. 
+     """
+     in_common = filecmp.dircmp(source_directory, replica_directory).common_subdirs
+     
+     if in_common:
+          # Rename the replica directory to correspond to the source directory
+          new_name = source_directory[source_directory.rindex("\\")+1:]
+          new_path = replica_directory + new_name
+          update_name(source_directory, new_path)
+          compare_sync_directories(source_directory, new_path)
+          return source_directory, replica_directory
+     return None, None
+          
+
+from functools import reduce
+def compare_sync_directories(source_path, replica_path):
+    """ 
+    This method compares directories. If there is a common directory, the
+    algorithm must compare what is inside of the directory by calling this
+    recursively.
+    - they are mostly all reffered as directories, but can be files.
+    """
     comparison = filecmp.dircmp(source_path, replica_path)
     if comparison.common_subdirs:
         for subdirs in comparison.common_dirs:
-            compare_directories(os.path.join(source_path, subdirs), os.path.join(replica_path, subdirs))
+            if os.path.isdir(subdirs):
+                compare_files(source_dirs + subdirs, replica_dirs + subdirs)
+            compare_sync_directories(os.path.join(source_path, subdirs), os.path.join(replica_path, subdirs))
 
     if comparison.left_only and not comparison.right_only:
         for subdir_left in comparison.left_only:
-            copy_dir(source_path + subdir_left, replica_path)
+            # It is defined as dir, but it can be a file
+            if os.path.isdir(subdir_left):
+                copy_dir(source_path + subdir_left, replica_path)
+            else:
+                shutil.copyfile(source_path + subdir_left, replica_path)
 
         # here should be some function to compare
         #copy(comparison.left_only, left, right)
 
     if not comparison.left_only and comparison.right_only:
          for subdir_right in comparison.right_only:
-            delete_dir(replica_path + subdir_right)
-        
+            if os.path.isdir(subdir_right):
+                delete_dir(replica_path + subdir_right)
+            else:
+                 # removing the file
+                 delete_file(subdir_right)
+   
     if comparison.left_only and comparison.right_only:
-         pass
+        match = []
+        source_dirs = comparison.left_only
+        replica_dirs = comparison.right_only
+        for source_subdir in source_dirs:
+            for replica_subdir in replica_dirs:
+                if ((replica_path + replica_subdir) or (source_path + source_subdir)) in match:
+                     break
+                folder1, folder2 = match_directories(source_subdir, replica_subdir)
+                match = match.append(folder1)
+                match = match.append(folder2)
+         
         #copy(comparison.right_only, right, left)
+
+
+
+
 
     left_newer = []
     right_newer = []
