@@ -22,17 +22,22 @@ def create(to_create_path:str, destination:str, log_file:str):
             # get the name of the directory through its path
             foldername = os.path.basename(to_create_path)
             # create the new directory in the destination
-            os.mkdir(os.path.join(destination, foldername))
+            os.makedirs(os.path.join(destination, foldername))
             # copy the contents of the original directory to the destination one
             shutil.copytree(to_create_path, os.path.join(destination, foldername), dirs_exist_ok=True)
             # Log the state of the operation to the console output
-            print(f"Folder '{foldername}' created and its content copied from the source to {destination}.") 
+            print(f"Folder '{foldername}' created and its content copied from the source to replica.") 
             # Log the state of the operation to the "log_file"
-            log_file = open(log_file, "w")
-            log_file.write(f"Folder '{foldername}' created and its content copied from the source to {destination}.")
+            log = open(log_file, "a")
+            log.write(f"Folder '{foldername}' created and its content copied from the source to replica.\n")
+            log.close()
         except:
             # Log the state of the operation to the console output
             print(f"Folder '{foldername}' not created in replica.")
+            # Log the state of the operation to the "log_file"
+            log = open(log_file, "a")
+            log.write(f"Folder '{foldername}' not created in replica.\n")
+            log.close()
 
     # In case of a file 
     else:
@@ -42,15 +47,17 @@ def create(to_create_path:str, destination:str, log_file:str):
             # copy the original file to the destination
             shutil.copy(to_create_path, destination)
             # Log the state of the operation to the console output
-            print(f"File '{filename}' created and its content copied from the source to {destination}.") 
+            print(f"File '{filename}' created and its content copied from the source to replica.") 
             # Log the state of the operation to the "log_file"
-            log_file = open(log_file, "w")
-            log_file.write(f"File '{foldername}' created and its content copied from the source to {destination}.")
+            log = open(log_file, "a")
+            log.write(f"File '{filename}' created and its content copied from the source to replica.\n")
+            log.close()
         except:
             # Log the state of the operation to the console output
-            print(f'File "{filename}" not created.')
-
-
+            print(f"File '{filename}' not created.\n")
+            log = open(log_file, "a")
+            log.write(f"File '{filename}' not created.\n")
+            log.close()
 
 
 def delete(to_delete_path:str, log_file:str):
@@ -65,7 +72,7 @@ def delete(to_delete_path:str, log_file:str):
         Path to the file where the create operation should be logged. 
     """
      # In case the "to_delete_path" leads to a directory and if it is not empty
-    if os.path.isdir(to_delete_path) and os.listdir(to_delete_path):
+    if os.path.isdir(to_delete_path):
         try:
             # get the name of the directory through its path
             foldername = os.path.basename(to_delete_path)
@@ -74,13 +81,16 @@ def delete(to_delete_path:str, log_file:str):
             # Log the state of the operation to the console output
             print(f"Folder '{foldername}' and its content deleted") 
             # Log the state of the operation to the "log_file"
-            log_file = open(log_file, "w")
-            log_file.write(f"Folder '{foldername}' and its content deleted")
+            log = open(log_file, "a")
+            log.write(f"Folder '{foldername}' and its content deleted.\n")
+            log.close()
         except:
             # Log the state of the operation to the console output
-            print(f'Folder "{foldername}" not deleted')
-
-    # works for files and empty folders, although the variable is called 'filename'
+            print(f"Folder '{foldername}'' not deleted.")
+            # Log the state of the operation to the "log_file"
+            log = open(log_file, "a")
+            log.write(f"Folder '{foldername}'' not deleted.\n")
+            log.close()
     else:
         try:
             # get the name of the file through its path
@@ -88,23 +98,19 @@ def delete(to_delete_path:str, log_file:str):
             # delete the file
             os.unlink(to_delete_path)
             # Log the state of the operation to the console output
-            if os.path.isfile(to_delete_path):
-                print(f"File '{filename}' deleted")
-                # Log the state of the operation to the "log_file"
-                log_file = open(log_file, "w")
-                log_file.write(f"File '{filename}' deleted")
-            else:
-                print(f"Folder '{foldername}' deleted") 
-                # Log the state of the operation to the "log_file"
-                log_file = open(log_file, "w")
-                log_file.write(f"Folder '{foldername}' deleted")
-        
+            print(f"File '{filename}' deleted")
+            # Log the state of the operation to the "log_file"
+            log = open(log_file, "a")
+            log.write(f"File '{filename}' deleted.\n")    
+            log.close()  
         except:
-            if os.path.isfile(to_delete_path):
-                # Log the state of the operation to the console output
-                print(f"File '{filename}' not deleted.")
-            else:
-                print(f"Folder '{filename}' not deleted.")
+            # Log the state of the operation to the console output
+            print(f"File '{filename}' not deleted.")
+            # Log the state of the operation to the "log_file"
+            log = open(log_file, "a")
+            log.write(f"File '{filename}' not deleted.\n")    
+            log.close()  
+
 
 
 def update_file(original_file_path:str, to_update_path:str, log_file:str):
@@ -128,11 +134,16 @@ def update_file(original_file_path:str, to_update_path:str, log_file:str):
         # Log the state of the operation to the console output
         print(f"File '{filename}' updated.")
         # Log the state of the operation to the "log_file"
-        log_file = open(log_file, "w")
-        log_file.write(f"File {filename} updated.")
+        log = open(log_file, "a")
+        log.write(f"File {filename} updated.\n")
+        log.close()
     except:
-         # Log the state of the operation to the console output
-         print(f"File {filename} not updated.")
+        # Log the state of the operation to the console output
+        print(f"File {filename} not updated.")
+        # Log the state of the operation to the "log_file"
+        log = open(log_file, "a")
+        log.write(f"File {filename} not updated.\n")
+        log.close()
 
 
 
@@ -159,11 +170,16 @@ def update_folder(original_folder_path:str, to_update_path:str, log_file:str):
         # Log the state of the operation to the console output
         print(f"{foldername} updated.")
         # Log the state of the operation to the "log_file"
-        log_file = open(log_file, "w")
-        log_file.write(f"{foldername} updated.")
+        log = open(log_file, "a")
+        log.write(f"{foldername} updated.\n")
+        log.close()
     except:
-         # Log the state of the operation to the console output
-         print(f"{foldername} not updated.")
+        # Log the state of the operation to the console output
+        print(f"{foldername} not updated.")
+        # Log the state of the operation to the "log_file"
+        log = open(log_file, "a")
+        log.write(f"{foldername} not updated.\n")
+        log.close()
 
 
 def update_name(source_path:str, replica_path:str, log_file:str):
@@ -190,10 +206,15 @@ def update_name(source_path:str, replica_path:str, log_file:str):
         # Log the state of the operation to the console output
         print(f"{old_name} remaned to {new_name}.")
         # Log the state of the operation to the "log_file"
-        log_file = open(log_file, "w")
-        log_file.write(f"{old_name} remaned to {new_name}.")
+        log = open(log_file, "a")
+        log.write(f"{old_name} remaned to {new_name}.\n")
+        log.close()
     except:
-         # Log the state of the operation to the console output
-         print(f"{old_name} not remaned to {new_name}.")
+        # Log the state of the operation to the console output
+        print(f"{old_name} not remaned to {new_name}.")
+        # Log the state of the operation to the "log_file"
+        log = open(log_file, "a")
+        log.write(f"{old_name} remaned to {new_name}.\n")
+        log.close()
 
 
