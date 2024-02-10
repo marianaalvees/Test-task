@@ -1,90 +1,67 @@
-##### 1. specify the arguments #####
-def syncronizer(source_path, replica_path, syncronization_interval, log_file):
-    pass
-
-
-
-### 2. check the first subdirectories and files
 from filecmp import dircmp
 import hashlib
-
-source_path = "C:\\Users\\maria\\Documents\\Others\\Test-task\\source"
-replica_path = "C:\\Users\\maria\\Documents\\Others\\Test-task\\replica"
+from operations import * 
 
 
-# list of files and subdirectories in source
-in_source = dircmp(source_path, replica_path).left_list
+def compare_files(source_file:str, replica_file:str):
+    """
+    Compares the content of two files to check if they are identical.
 
-# list of files and subdirectories in replica
-in_replica = dircmp(source_path, replica_path).right_list
+    Parameters:
+    -----------
+    source_file : string
+        Path to the file in the source for comparison.
+    replica_file : string
+        Path to the file in the replica for comparison.
 
-
-in_common = dircmp(source_path, replica_path).common    
-
-extra = [in_replica - in_common]
-
-lacking = [in_source - in_common]
-
-
-def compare_in_common(source_path, replica_path):
-    # list of files and subdirectories both directories have in common
-    in_common = dircmp(source_path, replica_path).common
-    
-    # list of files in both directories
-    in_common_files = dircmp(source_path, replica_path).common_files
-
-    # if there's any files in common, check if they contain the same
-    if in_common:
-        non_equal_files = compare_in_common_files(source_path, replica_path, in_common_files)
-    
-    # list of subdirectories in both directories
-    in_common_subdir = in_common - in_common_files
-
-    # if there's any subdirectories in common, check if they contain the same
-
-    if in_common_subdir:
-        non_equal_subdir = compare_in_common_subdir(source_path, replica_path, in_common_subdir)
-
-    # return a list with the non equal files and subdirectories
-    return non_equal_files + non_equal_subdir
-
-
-def compare_in_common_files(source_path, replica_path, files):
+    Returns:
+    --------
+    bool
+        True if the content of both files is identical, False otherwise.
+    """
+    # Define a list to store the MD5 hashes of the content of both files
     digests = []
-    equal = []
-    # maybe should be somewhere folder_path
-
-    # iterating through the files with common names in source and replica
-    for file in files:
-        # iterating through the paths to the common files and comparing their contents
-        for file in [source_path + file, replica_path + file]:
-            hasher = hashlib.md5()
-            with open(file, 'rb') as f:
-                content = f.read()
-                hasher.update(content)
-                h = hasher.hexdigest()
-                digests.append(h)
-                print(h)
-        equal.apend(digests[0] == digests[1])
-        digests = []
-   
-    # returning the non equal files
-    return [file for boolean in equal if boolean == 0]
+    # Iterate over both files
+    for file in [source_file, replica_file]:
+        # Initialize an MD5 hasher
+        hasher = hashlib.md5()
+        # Open the file in binary mode
+        with open(file, 'rb') as f:
+            # Read the content of the file and update the hasher
+            content = f.read()
+            hasher.update(content)
+            # Get the hexadecimal digest of the content
+            h = hasher.hexdigest()
+            # Append the digest to the list
+            digests.append(h)
+    # Return a boolean dependent of whether the files' content are identical 
+    return digests[0] == digests[1]
 
 
-def compare_in_common_subdir(source_path, replica_path, subdirs):
-    pass
+def match_folders(source_directory:str, replica_directory:str):
+    """
+    Matches folders by checking if they have any subdirectories or files in common.
 
-# seperate between folders and files
+    Parameters:
+    -----------
+    source_directory : string
+        Path to the folder in the source for comparison.
+    replica_directory : string
+        Path to the folder in the replica for comparison.
 
+    Returns:
+    --------
+    String, string
+        Returns two strings, corresponding to the paths for each folder, in case they are a match.
+        That, is, if they have at least one subdirectory or file name in common. Otherwise, it 
+        returns two strings correponding to "None".
+    """
 
-def compare_diff():
-    pass
-
-
-
-##### 3. try to optimize the for loop #####
-
-
-
-# 4. functions for writting updates, deletions, ...
+    # store in a list the names of common subdirectories and files in the two folders
+    in_common = dircmp(source_directory, replica_directory).common
+    # If they have anything in common, update the replica folder to resemble the source folder
+    if in_common:
+          update_folder(source_directory, replica_directory)
+          return source_directory, replica_directory
+    # If they have nothing in common, return None
+    return "None", "None"

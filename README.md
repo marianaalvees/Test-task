@@ -1,79 +1,56 @@
 # Test-task
 
-https://www.youtube.com/watch?v=lMAT-ePTzgg
+This repository contains a set of Python scripts for folder synchronization.
 
-https://tonyteaches.tech/detect-file-change-python/
+## Overview
 
-file and directoriy comparisons
-https://docs.python.org/3/library/filecmp.html
+The primary scripts included in this repository are:
 
-compared subdirectories functions based on this:
-https://gist.github.com/pyrochlore/b754039446ef1583c258b4053cdaf2b4
+- **functions.py**: Contains functions for comparing files, matching folders.
+- **operations.py**: Includes operations such as creating, deleting, and updating files and directories.
+- **sync.py**: Implements a synchronization algorithm to compare and sync folders.
 
+## Scripts
 
-shutil
-https://docs.python.org/3/library/shutil.html
+### functions.py
 
+This script contains functions for file and folder comparison:
 
+- **compare_files**: Compares the content of two files to check if they are identical.
+- **match_folders**: Matches folders by checking if they have any subdirectories or files in common.
 
+### operations.py
 
--- ainda tenho de ver dos paths que ando a dar + e aditionar o file, mas pode não funcionar
+This script provides operations for handling files and directories:
 
+- **create**: Creates a folder or file in the destination based on the provided path.
+- **delete**: Deletes a folder or file.
+- **update_file**: Updates the contents of a file.
+- **update_folder**: Updates the contents of a folder.
+- **update_name**: Updates the name of a folder or file.
 
+### sync.py
 
-import os
-import shutil
-import urllib.request
-from datetime import datetime
-from hasher import sha1
-from notifier import send_notification
+This script implements a synchronization algorithm to compare and synchronize folders:
 
-def move_files(filename):
-    shutil.copy(filename, '/root/campbell/updates/')
-    os.rename(filename, '/root/campbell/latest.pdf')
+- **compare_sync_folders**: Compares folders recursively and synchronizes their contents if they have common subdirectories or files.
 
-def check_for_update():
-    # get date and time as string
-    now = datetime.now()
-    filename = '/root/campbell/{}.pdf'.format(now.strftime("%Y%d%m%H%M%S"))
-    
-    # download file
-    url = 'https://tonyteaches.tech/test.pdf'
-    urllib.request.urlretrieve(url, filename)
-    
-    # get hashes
-    try:
-        hash_latest = sha1('/root/campbell/latest.pdf')
-    except:
-        move_files(filename)
-        print('First file saved')
-        return
-    hash_new = sha1(filename)
-    
-    # compare hashes
-    if hash_latest != hash_new:
-        print('Found update')
-        move_files(filename)
-        send_notification(url)
-    else:
-        print('No update')
-        os.remove(filename)
+## References
 
-check_for_update()
+- [filecmp Python Library Documentation](https://docs.python.org/3/library/filecmp.html)
+- [shutil Python Library Documentation](https://docs.python.org/3/library/shutil.html)
+- [MD5 Hash Comparison](https://stackoverflow.com/questions/36873485/compare-md5-hashes-of-two-files-in-python)
+- [Renaming a Directory in Python](https://www.geeksforgeeks.org/python-os-rename-method/)
+- [Handling Paths in Python](https://www.pythoncheatsheet.org/cheatsheet/file-directory-path)
+- [Logging Information to a File in Python](https://blog.enterprisedna.co/python-write-to-file/)
+- [Threading in Python](https://medium.com/greedygame-engineering/an-elegant-way-to-run-periodic-tasks-in-python-61b7c477b679)
 
+## Credits
 
+The `compare_sync_folders` function was initially based on [this gist](https://gist.github.com/pyrochlore/b754039446ef1583c258b4053cdaf2b4).
 
-# hasher
+## Additional Resources
 
-import hashlib
+- [YouTube Tutorial on Iterating Over Subfolders and Files](https://www.youtube.com/watch?v=lMAT-ePTzgg)
+- [FreeCodeCamp Tutorial on Python File Handling](https://www.freecodecamp.org/news/python-delete-file-how-to-remove-files-and-folders/#:~:text=The%20shutil%20module%20has%20a,rmtree()%20on%20that%20variable.)
 
-def sha1(filename):
-    BUF_SIZE = 65536  # read stuff in 64kb chunks!
-    sha1 = hashlib.sha1()
-    with open(filename, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            sha1.update(data)
-    return sha1.hexdigest()
